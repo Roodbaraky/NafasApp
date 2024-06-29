@@ -1,5 +1,6 @@
 import { motion, useAnimation } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const BreathAnimation: React.FC = () => {
   const controls = useAnimation();
@@ -19,6 +20,8 @@ export const BreathAnimation: React.FC = () => {
     recovery: false,
     complete: false,
   });
+
+  const navigate = useNavigate()
   const countDownAnimation = useCallback(async () => {
     for (let i = countDown; i > 0; i--) {
       console.log("countdown working");
@@ -118,14 +121,10 @@ export const BreathAnimation: React.FC = () => {
     if (phase.recovery) {
       recoveryAnimation();
     }
-  }, [
-    breathingAnimation,
-    countDownAnimation,
-    holdingAnimation,
-    phase,
-    recoveryAnimation,
-    startBreathHold,
-  ]);
+    if (phase.complete){
+      navigate('/finished')
+    }
+  }, [breathingAnimation, countDownAnimation, holdingAnimation, navigate, phase, recoveryAnimation, startBreathHold]);
   return (
     <section className="flex flex-col items-center justify-evenly h-screen">
       <div className="breath-animation">
