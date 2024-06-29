@@ -1,6 +1,7 @@
 import { motion, useAnimation } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { BreathHolds } from "../contexts/breathHolds";
 
 export const BreathAnimation: React.FC = () => {
   const controls = useAnimation();
@@ -10,7 +11,9 @@ export const BreathAnimation: React.FC = () => {
   const countDown = 5;
   const [round, setRound] = useState(1);
   const [numOfBreaths, setNumOfBreaths] = useState(breathsPerRound);
-  const [breathHolds, setBreathHolds] = useState<number[]>([]);
+
+  const { breathHolds, setBreathHolds } = useContext(BreathHolds);
+
   const [holdTime, setHoldTime] = useState(0);
   const holdStartTime = useRef<number | null>(null);
   const [phase, setPhase] = useState({
@@ -21,7 +24,7 @@ export const BreathAnimation: React.FC = () => {
     complete: false,
   });
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const countDownAnimation = useCallback(async () => {
     for (let i = countDown; i > 0; i--) {
       console.log("countdown working");
@@ -96,7 +99,13 @@ export const BreathAnimation: React.FC = () => {
 
   const endBreathHold = () => {
     setPhase({ ...phase, hold: false });
-    setBreathHolds([...breathHolds, holdTime / 1000]);
+    setBreathHolds((previous) => {
+      if (previous) {
+        return [...previous, holdTime / 1000];
+      } else {
+        return [holdTime / 1000];
+      }
+    });
     setPhase({ ...phase, hold: false, recovery: true });
   };
 
@@ -121,10 +130,18 @@ export const BreathAnimation: React.FC = () => {
     if (phase.recovery) {
       recoveryAnimation();
     }
-    if (phase.complete){
-      navigate('/finished')
+    if (phase.complete) {
+      navigate("/finished");
     }
-  }, [breathingAnimation, countDownAnimation, holdingAnimation, navigate, phase, recoveryAnimation, startBreathHold]);
+  }, [
+    breathingAnimation,
+    countDownAnimation,
+    holdingAnimation,
+    navigate,
+    phase,
+    recoveryAnimation,
+    startBreathHold,
+  ]);
   return (
     <section className="flex flex-col items-center justify-evenly h-screen">
       <div className="breath-animation">
