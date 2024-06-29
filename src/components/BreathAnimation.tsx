@@ -17,6 +17,7 @@ export const BreathAnimation: React.FC = () => {
     breathing: false,
     hold: false,
     recovery: false,
+    complete: false,
   });
   const countDownAnimation = useCallback(async () => {
     for (let i = countDown; i > 0; i--) {
@@ -77,9 +78,13 @@ export const BreathAnimation: React.FC = () => {
       },
     });
     controls.stop();
-    setRound(round + 1);
     setNumOfBreaths(breathsPerRound);
-    setPhase({ ...phase, recovery: false, countDown: true });
+    if (round < numberOfRounds) {
+      setRound(round + 1);
+      setPhase({ ...phase, recovery: false, countDown: true });
+    } else {
+      setPhase({ ...phase, recovery: false, complete: true });
+    }
   }, [controls, phase, round]);
 
   const startBreathHold = useCallback(() => {
@@ -151,12 +156,16 @@ export const BreathAnimation: React.FC = () => {
       >
         Start Breathing
       </button>
-      <button
-        className={`btn ${phase.hold ? "" : "btn-disabled"}`}
-        onClick={endBreathHold}
-      >
-        Stop Holding
-      </button>
+      <div className="flex flex-col">
+        <div>{breathHolds}</div>
+        <div>{holdTime / 1000}</div>
+        <button
+          className={`btn ${phase.hold ? "" : "btn-disabled"}`}
+          onClick={endBreathHold}
+        >
+          Stop Holding
+        </button>
+      </div>
     </section>
   );
 };
