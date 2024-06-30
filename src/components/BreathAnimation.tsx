@@ -3,7 +3,15 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BreathHolds } from "../contexts/breathHolds";
 import Countdown from "./Countdown";
+import Hold from "./Hold";
 
+export interface Phase {
+  countDown: boolean;
+  breathing: boolean;
+  hold: boolean;
+  recovery: boolean;
+  complete: boolean;
+}
 export const BreathAnimation: React.FC = () => {
   const controls = useAnimation();
   const breathsPerRound = 3;
@@ -64,19 +72,19 @@ export const BreathAnimation: React.FC = () => {
     });
     setPhase({ ...phase, breathing: false, hold: true });
   }, [controls, phase]);
-  const holdingAnimation = useCallback(async () => {
-    if (!phase.hold) {
-      controls.stop();
-    }
-    await controls.start({
-      scale: [1, 0.9, 1, 0.9, 1, 0.9, 1],
-      transition: {
-        repeat: Infinity,
-        duration: 15,
-        ease: "easeInOut",
-      },
-    });
-  }, [controls, phase]);
+  // const holdingAnimation = useCallback(async () => {
+  //   if (!phase.hold) {
+  //     controls.stop();
+  //   }
+  //   await controls.start({
+  //     scale: [1, 0.9, 1, 0.9, 1, 0.9, 1],
+  //     transition: {
+  //       repeat: Infinity,
+  //       duration: 15,
+  //       ease: "easeInOut",
+  //     },
+  //   });
+  // }, [controls, phase]);
 
   const recoveryAnimation = useCallback(async () => {
     await controls.start({
@@ -114,13 +122,12 @@ export const BreathAnimation: React.FC = () => {
   };
 
   useEffect(() => {
-  
     if (phase.breathing) {
       breathingAnimation();
     }
     if (phase.hold) {
       startBreathHold();
-      holdingAnimation();
+
       holdStartTime.current = Date.now();
       const interval = setInterval(() => {
         if (holdStartTime.current !== null) {
@@ -135,14 +142,7 @@ export const BreathAnimation: React.FC = () => {
     if (phase.complete) {
       navigate("/finished");
     }
-  }, [
-    breathingAnimation,
-    holdingAnimation,
-    navigate,
-    phase,
-    recoveryAnimation,
-    startBreathHold,
-  ]);
+  }, [breathingAnimation, navigate, phase, recoveryAnimation, startBreathHold]);
   return (
     <section className="flex flex-col items-center justify-evenly h-screen">
       <div className="breath-animation">
@@ -160,6 +160,8 @@ export const BreathAnimation: React.FC = () => {
                 setPhase({ ...phase, countDown: false, breathing: true });
               }}
             />
+          ) : phase.hold ? (
+            <Hold phase={phase} />
           ) : (
             <motion.div
               animate={controls}
