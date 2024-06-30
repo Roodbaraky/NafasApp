@@ -24,7 +24,7 @@ export const BreathAnimation: React.FC = () => {
   const [countDown, setCountDown] = useState(countDownFrom);
   const [round, setRound] = useState(1);
   const [numOfBreaths, setNumOfBreaths] = useState(breathsPerRound);
-  const { breathHolds, setBreathHolds } = useContext(BreathHolds);
+  const { setBreathHolds } = useContext(BreathHolds);
   const [holdTime, setHoldTime] = useState(0);
   const holdStartTime = useRef<number | null>(null);
   const [phase, setPhase] = useState({
@@ -145,8 +145,7 @@ export const BreathAnimation: React.FC = () => {
         Start Breathing
       </button>
       <div className="flex flex-col">
-        <div>{breathHolds}</div>
-        <div>{holdTime / 1000}</div>
+        <div>{phase.hold && holdTime / 1000}</div>
         <button
           className={`btn ${phase.hold ? "" : "btn-disabled"}`}
           onClick={endBreathHold}
