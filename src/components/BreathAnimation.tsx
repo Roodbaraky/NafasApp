@@ -52,7 +52,6 @@ export const BreathAnimation: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log(Object.values(phase).includes(true));
     if (phase.hold) {
       startBreathHold();
       holdStartTime.current = Date.now();

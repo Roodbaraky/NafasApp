@@ -27,7 +27,6 @@ const Countdown: React.FC<CountdownProps> = ({
         },
       });
       setCountDown((prevCountDown) => prevCountDown - 1);
-      console.log(i);
     }
     setCountDown(countDownFrom)
     onCountdownComplete();
