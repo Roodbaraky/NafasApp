@@ -7,16 +7,16 @@ import { BreathHolds } from "./contexts/breathHolds";
 import { useState } from "react";
 
 function App() {
-  const [breathHolds, setBreathHolds] = useState<number[]|null>(null);
+  const [breathHolds, setBreathHolds] = useState<number[] | null>(null);
   return (
     <Container>
       <Navbar />
-        <BreathHolds.Provider value={{ breathHolds, setBreathHolds }}>
-      <Routes>
+      <BreathHolds.Provider value={{ breathHolds, setBreathHolds }}>
+        <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/finished" element={<Finished />} />
-      </Routes>
-        </BreathHolds.Provider>
+        </Routes>
+      </BreathHolds.Provider>
     </Container>
   );
 }
