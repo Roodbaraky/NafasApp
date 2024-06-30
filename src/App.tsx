@@ -5,6 +5,8 @@ import Finished from "./pages/Finished";
 import Home from "./pages/Home";
 import { BreathHolds } from "./contexts/breathHolds";
 import { useState } from "react";
+import About from "./pages/About";
+import Support from "./pages/Support";
 
 function App() {
   const [breathHolds, setBreathHolds] = useState<number[] | null>(null);
@@ -14,6 +16,8 @@ function App() {
       <BreathHolds.Provider value={{ breathHolds, setBreathHolds }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/support" element={<Support />} />
           <Route path="/finished" element={<Finished />} />
         </Routes>
       </BreathHolds.Provider>
