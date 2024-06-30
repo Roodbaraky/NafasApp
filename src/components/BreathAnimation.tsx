@@ -2,18 +2,19 @@ import { motion, useAnimation } from "framer-motion";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BreathHolds } from "../contexts/breathHolds";
+import Countdown from "./Countdown";
 
 export const BreathAnimation: React.FC = () => {
   const controls = useAnimation();
   const breathsPerRound = 3;
   // set to 3 for dev purposes, should be 30
   const numberOfRounds = 3;
-  const countDown = 5;
+  const navigate = useNavigate();
+  const countDownFrom = 5;
+  const [countDown, setCountDown] = useState(countDownFrom);
   const [round, setRound] = useState(1);
   const [numOfBreaths, setNumOfBreaths] = useState(breathsPerRound);
-
   const { breathHolds, setBreathHolds } = useContext(BreathHolds);
-
   const [holdTime, setHoldTime] = useState(0);
   const holdStartTime = useRef<number | null>(null);
   const [phase, setPhase] = useState({
@@ -24,32 +25,35 @@ export const BreathAnimation: React.FC = () => {
     complete: false,
   });
 
-  const navigate = useNavigate();
-  const countDownAnimation = useCallback(async () => {
-    for (let i = countDown; i > 0; i--) {
-      console.log("countdown working");
-      await controls.start({
-        scale: [1, 0.9, 1],
-        transition: {
-          times: [0, 0.9, 1],
-          duration: 1,
-        },
-      });
-    }
-    setPhase({ ...phase, countDown: false, breathing: true });
-  }, [controls, phase]);
-
   const breathingAnimation = useCallback(async () => {
     for (let i = 0; i < breathsPerRound; i++) {
       console.log(i, breathsPerRound);
+      if (i === 0) {
+        await controls.start({
+          scale: [1, 0.2],
+          transition: {
+            duration: 3,
+            ease: "easeInOut",
+          },
+        });
+      }
       await controls.start({
-        scale: [1, 0.2, 1],
+        scale: [0.2, 1, 0.2],
         transition: {
           duration: 3,
           ease: "easeInOut",
         },
       });
-      setNumOfBreaths((prevNum) => prevNum - 1);
+      if (i === breathsPerRound - 1) {
+        await controls.start({
+          scale: [0.2, 1],
+          transition: {
+            duration: 1,
+            ease: "easeInOut",
+          },
+        });
+      }
+      setNumOfBreaths((previousNumOfBreaths) => previousNumOfBreaths - 1);
     }
     await controls.start({
       scale: [1, 0.01, 1],
@@ -110,9 +114,7 @@ export const BreathAnimation: React.FC = () => {
   };
 
   useEffect(() => {
-    if (phase.countDown) {
-      countDownAnimation();
-    }
+  
     if (phase.breathing) {
       breathingAnimation();
     }
@@ -135,7 +137,6 @@ export const BreathAnimation: React.FC = () => {
     }
   }, [
     breathingAnimation,
-    countDownAnimation,
     holdingAnimation,
     navigate,
     phase,
@@ -150,18 +151,29 @@ export const BreathAnimation: React.FC = () => {
           {round}
         </h1>
         <div className="circle border border-slate-400 border-spacing-8 bg-slate-200 p-1 shadow-xl">
-          <motion.div
-            animate={controls}
-            className="circle size-40 flex flex-col place-content-center text-center text-3xl bg-slate-400 text-white shadow-xl"
-          >
-            {numOfBreaths === 0 && phase.breathing
-              ? "exhale fully"
-              : phase.hold
-              ? "hold"
-              : phase.recovery
-              ? "recover"
-              : numOfBreaths}
-          </motion.div>
+          {phase.countDown ? (
+            <Countdown
+              countDownFrom={countDownFrom}
+              countDown={countDown}
+              setCountDown={setCountDown}
+              onCountdownComplete={() => {
+                setPhase({ ...phase, countDown: false, breathing: true });
+              }}
+            />
+          ) : (
+            <motion.div
+              animate={controls}
+              className="circle size-40 flex flex-col place-content-center text-center text-3xl bg-slate-400 text-white shadow-xl"
+            >
+              {numOfBreaths === 0 && phase.breathing
+                ? "exhale fully"
+                : phase.hold
+                ? "hold"
+                : phase.recovery
+                ? "recover"
+                : numOfBreaths}
+            </motion.div>
+          )}
         </div>
       </div>
       <button
