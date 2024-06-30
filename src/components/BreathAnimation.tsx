@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BreathHolds } from "../contexts/breathHolds";
 import Countdown from "./Countdown";
 import Hold from "./Hold";
+import Recovery from "./Recovery";
 
 export interface Phase {
   countDown: boolean;
@@ -72,38 +73,25 @@ export const BreathAnimation: React.FC = () => {
     });
     setPhase({ ...phase, breathing: false, hold: true });
   }, [controls, phase]);
-  // const holdingAnimation = useCallback(async () => {
-  //   if (!phase.hold) {
-  //     controls.stop();
-  //   }
+
+  // const recoveryAnimation = useCallback(async () => {
   //   await controls.start({
-  //     scale: [1, 0.9, 1, 0.9, 1, 0.9, 1],
+  //     scale: [0.2, 1, 1],
   //     transition: {
-  //       repeat: Infinity,
+  //       times: [0, 0.2, 0.7],
   //       duration: 15,
   //       ease: "easeInOut",
   //     },
   //   });
-  // }, [controls, phase]);
-
-  const recoveryAnimation = useCallback(async () => {
-    await controls.start({
-      scale: [0.2, 1, 1],
-      transition: {
-        times: [0, 0.2, 0.7],
-        duration: 15,
-        ease: "easeInOut",
-      },
-    });
-    controls.stop();
-    setNumOfBreaths(breathsPerRound);
-    if (round < numberOfRounds) {
-      setRound(round + 1);
-      setPhase({ ...phase, recovery: false, countDown: true });
-    } else {
-      setPhase({ ...phase, recovery: false, complete: true });
-    }
-  }, [controls, phase, round]);
+  //   controls.stop();
+  //   setNumOfBreaths(breathsPerRound);
+  //   if (round < numberOfRounds) {
+  //     setRound(round + 1);
+  //     setPhase({ ...phase, recovery: false, countDown: true });
+  //   } else {
+  //     setPhase({ ...phase, recovery: false, complete: true });
+  //   }
+  // }, [controls, phase, round]);
 
   const startBreathHold = useCallback(() => {
     setHoldTime(0);
@@ -136,13 +124,13 @@ export const BreathAnimation: React.FC = () => {
       }, 100);
       return () => clearInterval(interval);
     }
-    if (phase.recovery) {
-      recoveryAnimation();
-    }
+    // if (phase.recovery) {
+    //   recoveryAnimation();
+    // }
     if (phase.complete) {
       navigate("/finished");
     }
-  }, [breathingAnimation, navigate, phase, recoveryAnimation, startBreathHold]);
+  }, [breathingAnimation, navigate, phase, startBreathHold]);
   return (
     <section className="flex flex-col items-center justify-evenly h-screen">
       <div className="breath-animation">
@@ -162,6 +150,18 @@ export const BreathAnimation: React.FC = () => {
             />
           ) : phase.hold ? (
             <Hold phase={phase} />
+          ) : phase.recovery ? (
+            <Recovery
+              onRecoveryComplete={() => {
+                setNumOfBreaths(breathsPerRound);
+                if (round < numberOfRounds) {
+                  setRound(round + 1);
+                  setPhase({ ...phase, recovery: false, countDown: true });
+                } else {
+                  setPhase({ ...phase, recovery: false, complete: true });
+                }
+              }}
+            />
           ) : (
             <motion.div
               animate={controls}
