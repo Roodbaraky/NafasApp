@@ -171,6 +171,38 @@ export const BreathAnimation: React.FC = () => {
                   //detect current phase
                   //pause/stop current phase
                   //resume/start again from current phrase on next click
+                  if (!phase.sessionPaused) {
+                    const activePhase = Object.entries(phase).filter(
+                      ([key, value]) => {
+                        if (value === true && key !== "sessionRunning")
+                          return key;
+                      }
+                    )?.[0][0] as keyof typeof phase;
+                    const pauseControlObject: {
+                      [key in keyof Phase]: () => void;
+                    } = {
+                      countdown: () => {
+                        return console.log(activePhase);
+                      },
+                      breathing: () => {
+                        return console.log(activePhase);
+                      },
+                      hold: () => {
+                        return console.log(activePhase);
+                      },
+                      recovery: () => {
+                        return console.log(activePhase);
+                      },
+                      complete:()=>{},
+                      sessionPaused:()=>{},
+                      sessionRunning:()=>{}
+                    
+                    };
+                    
+                      pauseControlObject[activePhase]();
+                    
+                    setPhase({ ...phase, sessionPaused: true });
+                  }
                 }
               }}
             >
