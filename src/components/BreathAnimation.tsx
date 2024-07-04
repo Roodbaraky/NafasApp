@@ -1,18 +1,22 @@
 import { motion, useAnimation } from "framer-motion";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { BiSkipNext } from "react-icons/bi";
+import { BsPause, BsPlay } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { BreathHolds } from "../contexts/breathHolds";
+import Breathing from "./Breathing";
 import Countdown from "./Countdown";
 import Hold from "./Hold";
 import Recovery from "./Recovery";
-import Breathing from "./Breathing";
 
 export interface Phase {
-  countDown: boolean;
+  countdown: boolean;
   breathing: boolean;
   hold: boolean;
   recovery: boolean;
   complete: boolean;
+  sessionRunning: boolean;
+  sessionPaused: boolean;
 }
 export const BreathAnimation: React.FC = () => {
   const controls = useAnimation();
@@ -28,11 +32,13 @@ export const BreathAnimation: React.FC = () => {
   const [holdTime, setHoldTime] = useState(0);
   const holdStartTime = useRef<number | null>(null);
   const [phase, setPhase] = useState({
-    countDown: false,
+    countdown: false,
     breathing: false,
     hold: false,
     recovery: false,
     complete: false,
+    sessionRunning: false,
+    sessionPaused: false,
   });
 
   const startBreathHold = useCallback(() => {
@@ -75,29 +81,33 @@ export const BreathAnimation: React.FC = () => {
           Round:
           {round}
         </h1>
-        <div className="circle border border-slate-400 border-spacing-8 bg-slate-200 p-1 shadow-xl">
+        <div className="circle border border-slate-400 border-spacing-8 bg-slate-200 p-1  shadow-xl">
           {!Object.values(phase).includes(true) ? (
-            <motion.div
-              animate={controls}
-              className="circle size-40 flex flex-col place-content-center text-center text-3xl bg-slate-400 text-white shadow-xl"
-            >
-              {numOfBreaths === 0 && phase.breathing
-                ? "exhale fully"
-                : phase.hold
-                ? "hold"
-                : phase.recovery
-                ? "recover"
-                : numOfBreaths}
-            </motion.div>
+            <>
+              <motion.div
+                animate={controls}
+                className="circle size-40 flex flex-col place-content-center text-center text-3xl bg-slate-400 text-white shadow-xl"
+              >
+                {numOfBreaths === 0 && phase.breathing
+                  ? "exhale fully"
+                  : phase.hold
+                  ? "hold"
+                  : phase.recovery
+                  ? "recover"
+                  : !phase.sessionRunning
+                  ? "Nafas"
+                  : numOfBreaths}
+              </motion.div>
+            </>
           ) : (
             <>
-              {phase.countDown && (
+              {phase.countdown && (
                 <Countdown
                   countDownFrom={countDownFrom}
                   countDown={countDown}
                   setCountDown={setCountDown}
                   onCountdownComplete={() => {
-                    setPhase({ ...phase, countDown: false, breathing: true });
+                    setPhase({ ...phase, countdown: false, breathing: true });
                   }}
                 />
               )}
@@ -125,9 +135,14 @@ export const BreathAnimation: React.FC = () => {
                     setNumOfBreaths(breathsPerRound);
                     if (round < numberOfRounds) {
                       setRound(round + 1);
-                      setPhase({ ...phase, recovery: false, countDown: true });
+                      setPhase({ ...phase, recovery: false, countdown: true });
                     } else {
-                      setPhase({ ...phase, recovery: false, complete: true });
+                      setPhase({
+                        ...phase,
+                        recovery: false,
+                        complete: true,
+                        sessionRunning: false,
+                      });
                     }
                   }}
                 />
@@ -135,24 +150,46 @@ export const BreathAnimation: React.FC = () => {
             </>
           )}
         </div>
+        <div className="text-center text-3xl h-10">
+          {phase.hold && (holdTime / 1000).toFixed(1)}
+        </div>
       </div>
-      <button
-        className="btn"
-        onClick={() => {
-          setPhase({ ...phase, countDown: true });
-        }}
-      >
-        Start Breathing
-      </button>
-      <div className="flex flex-col">
-        <div>{phase.hold && holdTime / 1000}</div>
-        <button
-          className={`btn ${phase.hold ? "" : "btn-disabled"}`}
-          onClick={endBreathHold}
-        >
-          Stop Holding
-        </button>
-      </div>
+      <section>
+        {!phase.hold ? (
+          <label
+            htmlFor="play-pause-btn"
+            className="flex flex-col gap-1 text-center"
+          >
+            <button
+              id="play-pause-btn"
+              className="btn btn-outline rounded-full size-14"
+              onClick={() => {
+                if (!phase.sessionRunning) {
+                  setPhase({ ...phase, countdown: true, sessionRunning: true });
+                  setBreathHolds([]);
+                } else {
+                  //detect current phase
+                  //pause/stop current phase
+                  //resume/start again from current phrase on next click
+                }
+              }}
+            >
+              {!phase.sessionRunning ? <BsPlay /> : <BsPause />}
+            </button>
+            {!phase.sessionRunning ? "Start" : "Pause"}
+          </label>
+        ) : (
+          <div className="flex flex-col">
+            <button
+              className={`btn rounded-full size-14  btn-outline
+              `}
+              onClick={endBreathHold}
+            >
+              <BiSkipNext />
+            </button>
+          </div>
+        )}
+      </section>
     </section>
   );
 };
